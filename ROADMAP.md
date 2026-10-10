@@ -27,8 +27,8 @@ We are rebuilding this entire game in Python, piece by piece — including every
 ## Build order (Python)
 
 - **v1** ✅ — text version: core loop (stream/cool/hype), heat vs subs, glitch events
-- **v2** — props shop (spend subs on props), more glitch events, sponsorships
-- **v3** — rappers roster + music studio wing
+- **v2** ✅ — props shop (Artuban Sculpture, 3 posters, 3 figures; each boosts per-stream subs), raid events
+- **v3** — sponsorships, rappers roster + music studio wing
 - **v4** — stream lengths, passive subs, surfing + life chapter prestige
 - **v5** — graphics with pygame, camera views
 
