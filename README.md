@@ -17,7 +17,12 @@ You're a streamer. Reach 1,000 subs before your rig overheats (heat 100 = game o
 - `cool` — cool the rig: heat drops, no subs
 - `hype` — HYPE BLAST: big subs, big heat (only 3)
 
-Watch out for glitch events — type `fix` fast or lose subs.
+Watch out for glitch events — type `fix` fast or lose subs. Sometimes a bigger streamer raids you with free viewers.
+
+## What's new in v2
+
+- **Props shop** — type `shop`, buy posters and figures with your subs; each one boosts every future stream
+- **Raid events** — random free viewer raids
 
 ## Roadmap
 
