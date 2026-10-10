@@ -11,7 +11,7 @@ You need Python 3. Open a terminal in this folder and run:
 python3 game.py
 ```
 
-You're a streamer. Reach 1,000 subs before your rig overheats (heat 100 = game over).
+You're a streamer. Reach 1,000,000 subs before your rig overheats (heat 100 = game over).
 
 - `stream` — go live: gain subs, heat rises
 - `cool` — cool the rig: heat drops, no subs
