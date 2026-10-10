@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Pixel Streamer Web</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Press+Start+2P&display=swap');
+
+      :root {
+        color-scheme: light dark;
+        --bg: #eff3f0;
+        --surface: #ffffff;
+        --surface-2: #e2e9e5;
+        --ink: #102019;
+        --muted: #486055;
+        --line: #25382f;
+        --green: #00a76f;
+        --green-soft: #c7f6dd;
+        --orange: #f06d24;
+        --orange-soft: #ffe0bf;
+        --yellow: #f4c542;
+        --red: #d43131;
+        --red-soft: #ffd5d5;
+        --blue: #1677d2;
+        --shadow: #102019;
+        --button-ink: #07130d;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b100e;
+          --surface: #151d19;
+          --surface-2: #202c26;
+          --ink: #edf8f2;
+          --muted: #a8bcb1;
+          --line: #729080;
+          --green: #1be59b;
+          --green-soft: #113b2b;
+          --orange: #ff8a42;
+          --orange-soft: #472819;
+          --yellow: #ffd45d;
+          --red: #ff5f5f;
+          --red-soft: #421d1d;
+          --blue: #4aa7ff;
+          --shadow: #000000;
+          --button-ink: #07130d;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html { min-width: 0; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(90deg, color-mix(in srgb, var(--line) 8%, transparent) 1px, transparent 1px),
+          linear-gradient(0deg, color-mix(in srgb, var(--line) 8%, transparent) 1px, transparent 1px),
+          var(--bg);
+        background-size: 20px 20px;
+        color: var(--ink);
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 16px;
+      }
+
+      button, input { font: inherit; }
+      button { touch-action: manipulation; }
+
+      .app {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+        padding: clamp(16px, 3vw, 34px);
+      }
+
+      .topline {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+      }
+
+      .mission h1 {
+        margin: 0 0 8px;
+        max-width: 720px;
+        font-family: "Press Start 2P", monospace;
+        font-size: clamp(20px, 3.5vw, 39px);
+        line-height: 1.35;
+        letter-spacing: -0.03em;
+      }
+
+      .mission p { margin: 0; color: var(--muted); line-height: 1.55; }
+      .goal-chip {
+        flex: 0 0 auto;
+        padding: 12px 14px;
+        border: 2px solid var(--line);
+        background: var(--yellow);
+        color: #211900;
+        box-shadow: 4px 4px 0 var(--shadow);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border: 2px solid var(--line);
+        background: var(--surface);
+        box-shadow: 6px 6px 0 var(--shadow);
+        margin-bottom: 24px;
+      }
+
+      .stat {
+        min-width: 0;
+        padding: 16px 18px;
+        border-right: 2px solid var(--line);
+      }
+      .stat:last-child { border-right: 0; }
+      .stat-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+      }
+      .stat-value {
+        display: block;
+        font-family: "Press Start 2P", monospace;
+        font-size: clamp(18px, 2.7vw, 28px);
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+      }
+      .mini-bar {
+        height: 7px;
+        margin-top: 10px;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+      }
+      .mini-fill { height: 100%; width: 0%; background: var(--green); transition: width .22s ease, background .22s ease; }
+
+      .game-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(320px, .85fr);
+        gap: 24px;
+        align-items: stretch;
+      }
+
+      .screen {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 480px;
+        border: 2px solid var(--line);
+        background: var(--surface);
+        box-shadow: 7px 7px 0 var(--shadow);
+        overflow: hidden;
+      }
+
+      .screen-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 11px 14px;
+        border-bottom: 2px solid var(--line);
+        background: var(--surface-2);
+      }
+      .screen-title { font-weight: 700; }
+      .live-light {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .live-light::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background: var(--green);
+        border: 1px solid var(--line);
+      }
+
+      .log {
+        flex: 1;
+        min-height: 280px;
+        max-height: 370px;
+        overflow-y: auto;
+        padding: 18px;
+        scroll-behavior: smooth;
+      }
+      .log-entry {
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px dashed color-mix(in srgb, var(--line) 45%, transparent);
+        line-height: 1.5;
+      }
+      .log-entry:first-child { padding-top: 0; }
+      .log-entry:last-child { border-bottom: 0; }
+      .log-tag { font-size: 12px; font-weight: 700; color: var(--muted); }
+      .log-entry.good .log-tag { color: var(--green); }
+      .log-entry.warn .log-tag { color: var(--orange); }
+      .log-entry.bad .log-tag { color: var(--red); }
+      .log-entry.raid .log-tag { color: var(--blue); }
+
+      .glitch-box {
+        display: none;
+        padding: 16px 18px;
+        border-top: 2px solid var(--line);
+        background: var(--red-soft);
+      }
+      .glitch-box.active { display: block; }
+      .glitch-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 11px;
+        font-weight: 700;
+      }
+      .timer-track { height: 7px; border: 1px solid var(--line); background: var(--surface); margin-bottom: 12px; }
+      .timer-fill { height: 100%; width: 100%; background: var(--red); transform-origin: left; }
+      .fix-row { display: flex; gap: 8px; }
+      .fix-row input {
+        min-width: 0;
+        flex: 1;
+        padding: 11px 12px;
+        border: 2px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        outline: 0;
+      }
+      .fix-row input:focus { box-shadow: inset 0 0 0 2px var(--yellow); }
+      .fix-row button { padding: 10px 16px; }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 14px;
+        border-top: 2px solid var(--line);
+        background: var(--surface-2);
+      }
+
+      .btn {
+        min-height: 50px;
+        border: 2px solid var(--line);
+        border-radius: 0;
+        background: var(--surface);
+        color: var(--ink);
+        box-shadow: 3px 3px 0 var(--shadow);
+        cursor: pointer;
+        font-weight: 800;
+        transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
+      }
+      .btn:hover:not(:disabled) { background: var(--yellow); }
+      .btn:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: none; }
+      .btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+      .btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+      .btn.stream { background: var(--green); color: var(--button-ink); }
+      .btn.hype { background: var(--orange); color: #1c0c02; }
+      .btn.shop-toggle[aria-expanded="true"] { background: var(--yellow); color: #211900; }
+
+      .side {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .how, .shop {
+        border: 2px solid var(--line);
+        background: var(--surface);
+        box-shadow: 6px 6px 0 var(--shadow);
+      }
+      .panel-head { padding: 14px 16px; border-bottom: 2px solid var(--line); font-weight: 800; background: var(--surface-2); }
+      .how ol { margin: 0; padding: 16px 18px 17px 44px; line-height: 1.55; color: var(--muted); }
+      .how li + li { margin-top: 8px; }
+      .how strong { color: var(--ink); }
+
+      .shop { display: none; }
+      .shop.open { display: block; }
+      .shop-list { display: grid; max-height: 425px; overflow-y: auto; }
+      .shop-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 13px 14px;
+        border-bottom: 1px solid color-mix(in srgb, var(--line) 35%, transparent);
+      }
+      .shop-item:last-child { border-bottom: 0; }
+      .item-name { display: block; font-weight: 700; line-height: 1.35; }
+      .item-meta { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; }
+      .buy-btn { min-width: 76px; min-height: 38px; padding: 7px 9px; font-size: 13px; }
+      .buy-btn.owned { background: var(--green-soft); }
+
+      .end-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: none;
+        place-items: center;
+        padding: 24px;
+        background: color-mix(in srgb, var(--surface) 92%, transparent);
+      }
+      .end-overlay.show { display: grid; }
+      .end-card { width: min(430px, 100%); text-align: center; }
+      .end-pixel {
+        margin: 0 0 18px;
+        font-family: "Press Start 2P", monospace;
+        font-size: clamp(25px, 6vw, 46px);
+        line-height: 1.35;
+      }
+      .end-card p { color: var(--muted); line-height: 1.55; }
+      .restart { padding-inline: 22px; background: var(--yellow); color: #211900; }
+
+      .repo-line {
+        margin: 22px 0 0;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .repo-line a { color: var(--ink); font-weight: 700; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+      @media (max-width: 850px) {
+        .topline { align-items: flex-start; flex-direction: column; }
+        .game-grid { grid-template-columns: 1fr; }
+        .side { display: grid; grid-template-columns: 1fr 1fr; }
+        .shop { grid-column: 1 / -1; }
+      }
+
+      @media (max-width: 620px) {
+        .app { padding: 14px 12px 28px; }
+        .topline { margin-bottom: 14px; }
+        .mission h1 { font-size: 22px; }
+        .goal-chip { width: 100%; text-align: center; }
+        .stats { grid-template-columns: 1fr 1fr; box-shadow: 4px 4px 0 var(--shadow); }
+        .stat { padding: 13px 12px; }
+        .stat:nth-child(2) { border-right: 0; }
+        .stat:nth-child(-n+2) { border-bottom: 2px solid var(--line); }
+        .stat-value { font-size: 18px; }
+        .game-grid { gap: 18px; }
+        .screen { min-height: 500px; box-shadow: 4px 4px 0 var(--shadow); }
+        .log { padding: 14px; max-height: 330px; }
+        .log-entry { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+        .controls { grid-template-columns: 1fr 1fr; }
+        .btn { min-height: 54px; }
+        .side { display: flex; }
+        .how ol { font-size: 14px; }
+        .fix-row { flex-direction: column; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <section class="topline" aria-labelledby="mission-title">
+        <div class="mission">
+          <h1 id="mission-title">Reach 1,000 subs before your setup melts.</h1>
+          <p>Stream smart, cool the rig, use your hype blasts, and build a studio that works for you.</p>
+        </div>
+        <div class="goal-chip" aria-label="Goal: 1,000 subscribers">GOAL // 1,000 SUBS</div>
+      </section>
+
+      <section class="stats" aria-label="Game stats">
+        <div class="stat">
+          <span class="stat-label">Subscribers</span>
+          <strong class="stat-value" id="subs">0</strong>
+          <div class="mini-bar" aria-hidden="true"><div class="mini-fill" id="subs-bar"></div></div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Heat</span>
+          <strong class="stat-value" id="heat">20%</strong>
+          <div class="mini-bar" aria-hidden="true"><div class="mini-fill" id="heat-bar"></div></div>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Hype left</span>
+          <strong class="stat-value" id="hype">3</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Props owned</span>
+          <strong class="stat-value" id="owned">0/7</strong>
+        </div>
+      </section>
+
+      <div class="game-grid">
+        <section class="screen" aria-label="Pixel Streamer game console">
+          <div class="screen-head">
+            <span class="screen-title">Event feed</span>
+            <span class="live-light">SYSTEM ONLINE</span>
+          </div>
+
+          <div class="log" id="log" role="log" aria-live="polite" aria-relevant="additions">
+            <div class="log-entry good"><span class="log-tag">READY</span><span>Your studio is live. Build to 1,000 subs without hitting 100 heat.</span></div>
+          </div>
+
+          <div class="glitch-box" id="glitch-box" aria-live="assertive">
+            <div class="glitch-line"><span>GLITCH! Type <strong>fix</strong> now.</span><span id="glitch-seconds">5.0s</span></div>
+            <div class="timer-track" aria-hidden="true"><div class="timer-fill" id="timer-fill"></div></div>
+            <form class="fix-row" id="fix-form">
+              <label for="fix-input" class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Type fix</label>
+              <input id="fix-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder='type "fix"' maxlength="12" />
+              <button class="btn" type="submit">Repair</button>
+            </form>
+          </div>
+
+          <div class="controls" aria-label="Game actions">
+            <button class="btn stream action" id="stream-btn" type="button">Stream</button>
+            <button class="btn action" id="cool-btn" type="button">Cool</button>
+            <button class="btn hype action" id="hype-btn" type="button">Hype ×3</button>
+            <button class="btn shop-toggle" id="shop-btn" type="button" aria-expanded="false" aria-controls="shop-panel">Shop</button>
+          </div>
+
+          <div class="end-overlay" id="end-overlay" role="dialog" aria-modal="true" aria-labelledby="end-title">
+            <div class="end-card">
+              <h2 class="end-pixel" id="end-title">YOU WIN</h2>
+              <p id="end-copy"></p>
+              <button class="btn restart" id="restart-btn" type="button">Play again</button>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side">
+          <section class="how" aria-labelledby="how-title">
+            <div class="panel-head" id="how-title">How to play</div>
+            <ol>
+              <li><strong>Stream</strong> gains 20–60 subs plus every prop bonus, but adds 8–15 heat.</li>
+              <li><strong>Cool</strong> removes 25 heat. <strong>Hype</strong> gives 80–150 subs but adds 20 heat.</li>
+              <li>If a glitch hits, type <strong>fix</strong> before the timer ends or lose 30 subs.</li>
+            </ol>
+          </section>
+
+          <section class="shop" id="shop-panel" aria-labelledby="shop-title">
+            <div class="panel-head" id="shop-title">Studio props // permanent stream boosts</div>
+            <div class="shop-list" id="shop-list"></div>
+          </section>
+        </aside>
+      </div>
+
+      <p class="repo-line">Follow the Python build on <a href="https://github.com/devontaewaller99-cmd/pixel-streamer-python" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var props = [
+          { name: "Artuban Sculpture", cost: 300, bonus: 15 },
+          { name: "Cyber Odyssey 2027 poster", cost: 150, bonus: 8 },
+          { name: "Neon Mecha Rising poster", cost: 150, bonus: 8 },
+          { name: "8-Bit Space Hero poster", cost: 150, bonus: 8 },
+          { name: "Pixel Samurai figure", cost: 200, bonus: 10 },
+          { name: "Cyber Mecha figure", cost: 200, bonus: 10 },
+          { name: "Mythic Chibi Dragon figure", cost: 250, bonus: 12 }
+        ];
+
+        var state;
+        var glitchTimer = null;
+        var glitchTick = null;
+        var glitchEndsAt = 0;
+
+        var els = {
+          subs: document.getElementById("subs"),
+          heat: document.getElementById("heat"),
+          hype: document.getElementById("hype"),
+          owned: document.getElementById("owned"),
+          subsBar: document.getElementById("subs-bar"),
+          heatBar: document.getElementById("heat-bar"),
+          log: document.getElementById("log"),
+          streamBtn: document.getElementById("stream-btn"),
+          coolBtn: document.getElementById("cool-btn"),
+          hypeBtn: document.getElementById("hype-btn"),
+          shopBtn: document.getElementById("shop-btn"),
+          shop: document.getElementById("shop-panel"),
+          shopList: document.getElementById("shop-list"),
+          glitchBox: document.getElementById("glitch-box"),
+          glitchSeconds: document.getElementById("glitch-seconds"),
+          timerFill: document.getElementById("timer-fill"),
+          fixForm: document.getElementById("fix-form"),
+          fixInput: document.getElementById("fix-input"),
+          endOverlay: document.getElementById("end-overlay"),
+          endTitle: document.getElementById("end-title"),
+          endCopy: document.getElementById("end-copy"),
+          restartBtn: document.getElementById("restart-btn")
+        };
+
+        function randomInt(min, max) {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function resetGame() {
+          stopGlitch(false);
+          state = { subs: 0, heat: 20, hype: 3, owned: [], over: false, turn: 0, glitch: false };
+          els.log.innerHTML = '<div class="log-entry good"><span class="log-tag">READY</span><span>Your studio is live. Build to 1,000 subs without hitting 100 heat.</span></div>';
+          els.endOverlay.classList.remove("show");
+          els.shop.classList.remove("open");
+          els.shopBtn.setAttribute("aria-expanded", "false");
+          renderShop();
+          updateUI();
+        }
+
+        function addLog(tag, message, type) {
+          var row = document.createElement("div");
+          row.className = "log-entry " + (type || "");
+          var tagEl = document.createElement("span");
+          tagEl.className = "log-tag";
+          tagEl.textContent = tag;
+          var msgEl = document.createElement("span");
+          msgEl.textContent = message;
+          row.appendChild(tagEl);
+          row.appendChild(msgEl);
+          els.log.appendChild(row);
+          els.log.scrollTop = els.log.scrollHeight;
+        }
+
+        function totalBonus() {
+          return state.owned.reduce(function (sum, index) { return sum + props[index].bonus; }, 0);
+        }
+
+        function updateUI() {
+          els.subs.textContent = state.subs.toLocaleString();
+          els.heat.textContent = state.heat + "%";
+          els.hype.textContent = state.hype;
+          els.owned.textContent = state.owned.length + "/" + props.length;
+          els.subsBar.style.width = Math.min(100, state.subs / 10) + "%";
+          els.heatBar.style.width = Math.min(100, state.heat) + "%";
+          els.heatBar.style.background = state.heat >= 75 ? "var(--red)" : state.heat >= 50 ? "var(--orange)" : "var(--green)";
+          els.hypeBtn.textContent = "Hype ×" + state.hype;
+          els.hypeBtn.disabled = state.over || state.glitch || state.hype <= 0;
+          els.streamBtn.disabled = state.over || state.glitch;
+          els.coolBtn.disabled = state.over || state.glitch;
+          els.shopBtn.disabled = state.over || state.glitch;
+          updateShopButtons();
+        }
+
+        function takeTurn() {
+          state.turn += 1;
+          if (checkEnd()) return;
+
+          if (Math.random() < 1 / 6) {
+            var raid = randomInt(30, 80);
+            state.subs += raid;
+            addLog("RAID", "A creator raided your stream: +" + raid + " free subs.", "raid");
+            updateUI();
+            if (checkEnd()) return;
+          }
+
+          if (Math.random() < 1 / 4) {
+            startGlitch();
+          }
+        }
+
+        function stream() {
+          if (state.over || state.glitch) return;
+          var base = randomInt(20, 60);
+          var bonus = totalBonus();
+          var heatGain = randomInt(8, 15);
+          state.subs += base + bonus;
+          state.heat = Math.min(100, state.heat + heatGain);
+          addLog("STREAM", "+" + (base + bonus) + " subs (" + base + " live" + (bonus ? " + " + bonus + " props" : "") + "), +" + heatGain + " heat.", "good");
+          updateUI();
+          takeTurn();
+        }
+
+        function cool() {
+          if (state.over || state.glitch) return;
+          var before = state.heat;
+          state.heat = Math.max(0, state.heat - 25);
+          addLog("COOL", "Rig cooled by " + (before - state.heat) + ". Heat is now " + state.heat + "%.", "");
+          updateUI();
+          takeTurn();
+        }
+
+        function hype() {
+          if (state.over || state.glitch || state.hype <= 0) return;
+          var gain = randomInt(80, 150);
+          state.hype -= 1;
+          state.subs += gain;
+          state.heat = Math.min(100, state.heat + 20);
+          addLog("HYPE", "+" + gain + " subs, +20 heat. " + state.hype + " hype blast" + (state.hype === 1 ? "" : "s") + " left.", "warn");
+          updateUI();
+          takeTurn();
+        }
+
+        function startGlitch() {
+          state.glitch = true;
+          glitchEndsAt = Date.now() + 5000;
+          els.glitchBox.classList.add("active");
+          els.timerFill.style.transition = "none";
+          els.timerFill.style.width = "100%";
+          void els.timerFill.offsetWidth;
+          els.timerFill.style.transition = "width 5s linear";
+          els.timerFill.style.width = "0%";
+          addLog("GLITCH", 'System error! Type "fix" within 5 seconds.', "bad");
+          updateUI();
+          setTimeout(function () { els.fixInput.focus(); }, 0);
+
+          glitchTick = setInterval(function () {
+            var remaining = Math.max(0, glitchEndsAt - Date.now());
+            els.glitchSeconds.textContent = (remaining / 1000).toFixed(1) + "s";
+          }, 100);
+          glitchTimer = setTimeout(failGlitch, 5000);
+        }
+
+        function stopGlitch(clearInput) {
+          if (glitchTimer) clearTimeout(glitchTimer);
+          if (glitchTick) clearInterval(glitchTick);
+          glitchTimer = null;
+          glitchTick = null;
+          if (state) state.glitch = false;
+          if (els.glitchBox) els.glitchBox.classList.remove("active");
+          if (clearInput && els.fixInput) els.fixInput.value = "";
+        }
+
+        function failGlitch() {
+          if (!state.glitch) return;
+          stopGlitch(true);
+          var loss = Math.min(30, state.subs);
+          state.subs = Math.max(0, state.subs - 30);
+          addLog("MISSED", "Glitch timed out. -" + loss + " subs.", "bad");
+          updateUI();
+          checkEnd();
+        }
+
+        function submitFix(event) {
+          event.preventDefault();
+          if (!state.glitch) return;
+          if (els.fixInput.value.trim().toLowerCase() === "fix") {
+            stopGlitch(true);
+            addLog("FIXED", "Glitch repaired. No subs lost.", "good");
+            updateUI();
+            checkEnd();
+          } else {
+            els.fixInput.value = "";
+            els.fixInput.placeholder = "exactly: fix";
+            els.fixInput.focus();
+          }
+        }
+
+        function checkEnd() {
+          if (state.heat >= 100) {
+            endGame(false);
+            return true;
+          }
+          if (state.subs >= 1000) {
+            endGame(true);
+            return true;
+          }
+          return false;
+        }
+
+        function endGame(won) {
+          state.over = true;
+          stopGlitch(true);
+          updateUI();
+          els.endTitle.textContent = won ? "YOU WIN" : "RIG MELTED";
+          els.endCopy.textContent = won
+            ? "You reached " + state.subs.toLocaleString() + " subs in " + state.turn + " turns with " + state.owned.length + " props in the studio."
+            : "Heat hit 100%. You finished with " + state.subs.toLocaleString() + " subs. Cool earlier and try another run.";
+          els.endOverlay.classList.add("show");
+          setTimeout(function () { els.restartBtn.focus(); }, 0);
+        }
+
+        function renderShop() {
+          els.shopList.innerHTML = "";
+          props.forEach(function (item, index) {
+            var row = document.createElement("div");
+            row.className = "shop-item";
+            var copy = document.createElement("div");
+            var name = document.createElement("span");
+            name.className = "item-name";
+            name.textContent = item.name;
+            var meta = document.createElement("span");
+            meta.className = "item-meta";
+            meta.textContent = "+" + item.bonus + " every stream";
+            copy.appendChild(name);
+            copy.appendChild(meta);
+            var button = document.createElement("button");
+            button.className = "btn buy-btn";
+            button.type = "button";
+            button.dataset.index = index;
+            button.addEventListener("click", function () { buyProp(index); });
+            row.appendChild(copy);
+            row.appendChild(button);
+            els.shopList.appendChild(row);
+          });
+        }
+
+        function updateShopButtons() {
+          var buttons = els.shopList.querySelectorAll(".buy-btn");
+          buttons.forEach(function (button) {
+            var index = Number(button.dataset.index);
+            var item = props[index];
+            var owned = state.owned.indexOf(index) !== -1;
+            button.textContent = owned ? "Owned" : item.cost + " subs";
+            button.classList.toggle("owned", owned);
+            button.disabled = owned || state.subs < item.cost || state.over || state.glitch;
+            button.setAttribute("aria-label", owned ? item.name + " owned" : "Buy " + item.name + " for " + item.cost + " subscribers");
+          });
+        }
+
+        function buyProp(index) {
+          if (state.over || state.glitch || state.owned.indexOf(index) !== -1) return;
+          var item = props[index];
+          if (state.subs < item.cost) return;
+          state.subs -= item.cost;
+          state.owned.push(index);
+          addLog("SHOP", "Bought " + item.name + " for " + item.cost + " subs. Streams now get +" + item.bonus + " more.", "good");
+          updateUI();
+        }
+
+        function toggleShop() {
+          if (state.over || state.glitch) return;
+          var open = !els.shop.classList.contains("open");
+          els.shop.classList.toggle("open", open);
+          els.shopBtn.setAttribute("aria-expanded", String(open));
+          if (open && window.innerWidth < 851) {
+            setTimeout(function () { els.shop.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 0);
+          }
+        }
+
+        els.streamBtn.addEventListener("click", stream);
+        els.coolBtn.addEventListener("click", cool);
+        els.hypeBtn.addEventListener("click", hype);
+        els.shopBtn.addEventListener("click", toggleShop);
+        els.fixForm.addEventListener("submit", submitFix);
+        els.restartBtn.addEventListener("click", resetGame);
+
+        resetGame();
+      }());
+    </script>
+  </body>
+</html>
